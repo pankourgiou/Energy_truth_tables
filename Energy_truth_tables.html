@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truth Table Generator</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:sans-serif;background:#f5f5f5;display:flex;justify-content:center;padding:2rem;}
+    .container{background:white;border-radius:12px;padding:2rem;max-width:1100px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+    h1{font-size:1.2rem;font-weight:500;color:#222;margin-bottom:0.25rem;}
+    p.sub{font-size:0.85rem;color:#888;margin-bottom:1.5rem;}
+    .controls{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    label{font-size:13px;color:#555;}
+    input[type=range]{width:160px;}
+    .n-out{font-size:13px;font-weight:500;color:#222;min-width:20px;}
+    .wrap{overflow-x:auto;}
+    table{border-collapse:collapse;font-size:13px;width:100%;}
+    th{background:#f0f0f0;padding:8px 12px;text-align:center;font-weight:500;color:#444;border:1px solid #e0e0e0;white-space:nowrap;}
+    th.grp-var{background:#e8edf7;color:#2d4a8a;}
+    th.grp-and{background:#e8f5e9;color:#1b5e20;}
+    th.grp-or{background:#fff8e1;color:#6d4c00;}
+    th.grp-not{background:#fce4ec;color:#880e28;}
+    td{padding:7px 12px;text-align:center;border:1px solid #eeeeee;}
+    tr:nth-child(even) td{background:#fafafa;}
+    .t{color:#1565c0;font-weight:500;}
+    .f{color:#c62828;font-weight:500;}
+    .row-count{font-size:12px;color:#aaa;margin-top:0.75rem;}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Truth Table Generator</h1>
+  <p class="sub">Generates AND, OR, and NOT columns for all variable combinations.</p>
+
+  <div class="controls">
+    <label>Variables:</label>
+    <input type="range" id="nvars" min="1" max="6" value="3" oninput="update()">
+    <span class="n-out" id="nout">3</span>
+  </div>
+
+  <div class="wrap" id="tableWrap"></div>
+  <div class="row-count" id="rowCount"></div>
+</div>
+
+<script>
+function update(){
+  const n=+document.getElementById('nvars').value;
+  document.getElementById('nout').textContent=n;
+
+  const vars=Array.from({length:n},(_,i)=>`X${i+1}`);
+  const andHeader=vars.join(' AND ');
+  const orHeader=vars.join(' OR ');
+
+  let html='<table><thead><tr>';
+  vars.forEach(v=>html+=`<th class="grp-var">${v}</th>`);
+  html+=`<th class="grp-and">${andHeader}</th>`;
+  html+=`<th class="grp-or">${orHeader}</th>`;
+  vars.forEach(v=>html+=`<th class="grp-not">NOT ${v}</th>`);
+  html+='</tr></thead><tbody>';
+
+  const rows=1<<n;
+  for(let r=0;r<rows;r++){
+    const combo=Array.from({length:n},(_,i)=>!!((r>>(n-1-i))&1));
+    const and=combo.every(Boolean);
+    const or=combo.some(Boolean);
+    const nots=combo.map(v=>!v);
+    const all=[...combo,and,or,...nots];
+    html+='<tr>'+all.map(v=>`<td class="${v?'t':'f'}">${v}</td>`).join('')+'</tr>';
+  }
+
+  html+='</tbody></table>';
+  document.getElementById('tableWrap').innerHTML=html;
+  document.getElementById('rowCount').textContent=`${rows} rows`;
+}
+
+update();
+</script>
+</body>
+</html>
